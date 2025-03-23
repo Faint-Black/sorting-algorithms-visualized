@@ -33,6 +33,7 @@ pub const Entry = struct {
 };
 
 pub const AuxiliarySortingVariables = struct {
+    satisfies_predicate: bool = undefined,
     key: u32 = undefined,
     i: usize = undefined,
     j: usize = undefined,
@@ -66,6 +67,17 @@ pub const State = struct {
     /// free allocated data
     pub fn Deinit(this: *State) void {
         this.allocator.free(this.entry_vector);
+    }
+
+    /// reset variables to starting values then shuffle vector
+    pub fn Reset(this: *State) void {
+        this.aux_vars = null;
+        this.is_sorted = false;
+        this.compare_counter = 0;
+        this.swap_counter = 0;
+        this.write_counter = 0;
+
+        this.Shuffle();
     }
 
     /// shuffle vector contents

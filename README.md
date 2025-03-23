@@ -7,11 +7,11 @@ Visualizing the process of different sorting algorithms with Raylib.
 
 ## Build
 ```sh
-zig build
+$ zig build --release=safe
 ```
 
 ## TODO
-- [ ] Command line arguments
+- [X] Command line arguments
 - [ ] Clean up codebase
 - [ ] Merge sort
 - [ ] Quick sort

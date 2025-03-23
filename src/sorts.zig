@@ -45,6 +45,7 @@ fn Insertion_Sort(state: *ent.State) void {
     // init "local" variables
     if (state.aux_vars == null) {
         state.aux_vars = ent.AuxiliarySortingVariables{
+            .satisfies_predicate = false,
             .i = 1,
             .j = 1,
         };
@@ -56,9 +57,22 @@ fn Insertion_Sort(state: *ent.State) void {
         return;
     }
 
-    if ((aux.j > 0) and state.Compare(aux.j, aux.j - 1, ent.State.Predicate)) {
+    // comparisons and swaps do not occur on the same iteration
+    if (aux.satisfies_predicate) {
         state.Swap(aux.j, aux.j - 1);
         aux.j -= 1;
+        aux.satisfies_predicate = false;
+        return;
+    }
+
+    // skip redundant iteration
+    if (aux.j == 0) {
+        aux.i += 1;
+        aux.j = aux.i;
+    }
+
+    if (state.Compare(aux.j, aux.j - 1, ent.State.Predicate)) {
+        aux.satisfies_predicate = true;
     } else {
         aux.i += 1;
         aux.j = aux.i;
@@ -69,11 +83,12 @@ fn Bubble_Sort(state: *ent.State) void {
     // init "local" variables
     if (state.aux_vars == null) {
         state.aux_vars = ent.AuxiliarySortingVariables{
+            .satisfies_predicate = false,
             .i = 1, // will serve as (rhs) index of a comparison pair
             .j = state.entry_vector.len, // will serve as the iteration count
         };
     }
-    const i: *usize = &state.aux_vars.?.i;
+    const aux: *ent.AuxiliarySortingVariables = &state.aux_vars.?;
     const max: *usize = &state.aux_vars.?.j;
 
     if (max.* <= 2) {
@@ -81,14 +96,21 @@ fn Bubble_Sort(state: *ent.State) void {
         return;
     }
 
-    if (i.* >= max.*) {
-        i.* = 1;
+    // comparisons and swaps do not occur on the same iteration
+    if (aux.satisfies_predicate) {
+        state.Swap(aux.i - 2, aux.i - 1);
+        aux.satisfies_predicate = false;
+        return;
+    }
+
+    if (aux.i >= max.*) {
+        aux.i = 1;
         max.* -= 1;
     }
 
-    if (state.Compare(i.* - 1, i.*, ent.State.Predicate) == false) {
-        state.Swap(i.* - 1, i.*);
+    if (state.Compare(aux.i - 1, aux.i, ent.State.Predicate) == false) {
+        aux.satisfies_predicate = true;
     }
 
-    i.* += 1;
+    aux.i += 1;
 }

@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const ent = @import("entry.zig");
+const clap = @import("clap.zig");
 const raylib = @cImport({
     @cInclude("raylib.h");
 });
@@ -9,7 +10,21 @@ pub const window_width = 700;
 pub const window_height = 400;
 pub const x_offset = 200;
 
-pub fn Render_Frame(state: *ent.State) void {
+pub fn Handle_Inputs(state: *ent.State, flags: *clap.Flags) void {
+    if (raylib.IsKeyPressed(raylib.KEY_R)) {
+        state.Reset();
+    }
+
+    if (raylib.IsKeyDown(raylib.KEY_UP)) {
+        flags.iterations_per_second += 1;
+    }
+    if (raylib.IsKeyDown(raylib.KEY_DOWN)) {
+        if (flags.iterations_per_second > 1)
+            flags.iterations_per_second -= 1;
+    }
+}
+
+pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
     Update_Entry_Color_Timers(state);
 
     const infopanel_color = raylib.Color{
@@ -23,27 +38,45 @@ pub fn Render_Frame(state: *ent.State) void {
 
     var string_buffer: [512]u8 = undefined;
     var slice: []const u8 = undefined;
-    const text_spacing = 22;
+    const text_spacing: i32 = 22;
+    var text_line_counter: i32 = 0;
 
     slice = std.fmt.bufPrint(&string_buffer, "Entries: {}\x00", .{state.entry_vector.len}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * 0), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+
+    slice = std.fmt.bufPrint(&string_buffer, "Iterations/s: {}\x00", .{flags.iterations_per_second}) catch
+        @panic("buffer fmt failed");
+    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
 
     slice = std.fmt.bufPrint(&string_buffer, "Sort: {s}\x00", .{state.current_sorting_algorithm.Get_String()}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * 1), 20, raylib.WHITE);
-
-    slice = std.fmt.bufPrint(&string_buffer, "Compares: {}\x00", .{state.compare_counter}) catch
-        @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * 2), 20, raylib.WHITE);
-
-    slice = std.fmt.bufPrint(&string_buffer, "Swaps: {}\x00", .{state.swap_counter}) catch
-        @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * 3), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 2;
 
     slice = std.fmt.bufPrint(&string_buffer, "Shuffles: {}\x00", .{state.shuffle_counter}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * 4), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+
+    slice = std.fmt.bufPrint(&string_buffer, "Compares: {}\x00", .{state.compare_counter}) catch
+        @panic("buffer fmt failed");
+    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+
+    slice = std.fmt.bufPrint(&string_buffer, "Swaps: {}\x00", .{state.swap_counter}) catch
+        @panic("buffer fmt failed");
+    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 4;
+
+    raylib.DrawText("(R) reset", 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+    raylib.DrawText("(UP) + ips", 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+    raylib.DrawText("(DOWN) - ips", 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
 
     const rect_width: f32 = @as(f32, @floatFromInt(window_width - x_offset)) / @as(f32, @floatFromInt(state.entry_vector.len));
     var rect_height: f32 = undefined;
