@@ -14,12 +14,14 @@ pub const SortingAlgorithm = enum {
     bogo,
     insertion,
     bubble,
+    selection,
 
     pub fn Get_String(self: SortingAlgorithm) []const u8 {
         return switch (self) {
             .bogo => "Bogo",
             .insertion => "Insertion",
             .bubble => "Bubble",
+            .selection => "Selection",
         };
     }
 
@@ -30,14 +32,16 @@ pub const SortingAlgorithm = enum {
                 .bogo => .insertion,
 
                 .insertion => .bubble,
-                .bubble => .insertion,
+                .bubble => .selection,
+                .selection => .insertion,
             };
         } else {
             return switch (self) {
                 .bogo => .insertion,
 
-                .insertion => .bubble,
+                .insertion => .selection,
                 .bubble => .insertion,
+                .selection => .bubble,
             };
         }
     }
@@ -67,6 +71,7 @@ pub const AuxiliarySortingVariables = struct {
     key: u32 = undefined,
     i: usize = undefined,
     j: usize = undefined,
+    k: usize = undefined,
 };
 
 pub const State = struct {
@@ -76,6 +81,7 @@ pub const State = struct {
     aux_vars: ?AuxiliarySortingVariables = null,
     is_sorted: bool = false,
     current_sorting_algorithm: SortingAlgorithm = undefined,
+    iteration_counter: usize = 0,
     compare_counter: usize = 0,
     swap_counter: usize = 0,
     shuffle_counter: usize = 0,
@@ -104,6 +110,7 @@ pub const State = struct {
     pub fn Reset(this: *State) void {
         this.aux_vars = null;
         this.is_sorted = false;
+        this.iteration_counter = 0;
         this.compare_counter = 0;
         this.swap_counter = 0;
         this.write_counter = 0;

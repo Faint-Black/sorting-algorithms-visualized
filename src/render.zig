@@ -15,8 +15,8 @@ const raylib = @cImport({
     @cInclude("raylib.h");
 });
 
-pub const window_width = 700;
-pub const window_height = 400;
+pub const window_width = 720;
+pub const window_height = 480;
 pub const x_offset = 200;
 
 pub fn Handle_Inputs(state: *ent.State, flags: *clap.Flags) void {
@@ -59,6 +59,11 @@ pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
     const text_spacing: i32 = 22;
     var text_line_counter: i32 = 0;
 
+    slice = std.fmt.bufPrint(&string_buffer, "[{s}]\x00", .{state.current_sorting_algorithm.Get_String()}) catch
+        @panic("buffer fmt failed");
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+
     slice = std.fmt.bufPrint(&string_buffer, "Entries: {}\x00", .{state.entry_vector.len}) catch
         @panic("buffer fmt failed");
     raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
@@ -67,12 +72,12 @@ pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
     slice = std.fmt.bufPrint(&string_buffer, "Iterations/s: {}\x00", .{flags.iterations_per_second}) catch
         @panic("buffer fmt failed");
     raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
-    text_line_counter += 1;
+    text_line_counter += 2;
 
-    slice = std.fmt.bufPrint(&string_buffer, "Sort: {s}\x00", .{state.current_sorting_algorithm.Get_String()}) catch
+    slice = std.fmt.bufPrint(&string_buffer, "Iteration: {}\x00", .{state.iteration_counter}) catch
         @panic("buffer fmt failed");
     raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
-    text_line_counter += 2;
+    text_line_counter += 1;
 
     slice = std.fmt.bufPrint(&string_buffer, "Shuffles: {}\x00", .{state.shuffle_counter}) catch
         @panic("buffer fmt failed");
@@ -87,28 +92,28 @@ pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
     slice = std.fmt.bufPrint(&string_buffer, "Swaps: {}\x00", .{state.swap_counter}) catch
         @panic("buffer fmt failed");
     raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.BLUE);
-    text_line_counter += 7;
+    text_line_counter += 9;
 
     raylib.DrawText("(R) reset", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
-    raylib.DrawText("(<-) previous algo.", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(<-) previous sort", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
-    raylib.DrawText("(->) next algo.", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(->) next sort", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
-    raylib.DrawText("(UP) ips+", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(UP) +ips", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
-    raylib.DrawText("(DOWN) ips-", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(DOWN) -ips", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
 
     const rect_width: f32 = @as(f32, @floatFromInt(window_width - x_offset)) / @as(f32, @floatFromInt(state.entry_vector.len));
-    var rect_height: f32 = undefined;
     for (state.entry_vector, 0..) |entry, i| {
-        rect_height = @floatFromInt((window_height / state.entry_vector.len) * entry.value);
+        const rect_height_scalar: f32 = window_height / @as(f32, @floatFromInt(state.entry_vector.len));
+        const rect_height: f32 = rect_height_scalar * @as(f32, @floatFromInt(entry.value));
         raylib.DrawRectangle(
             // column x position
             @intFromFloat(rect_width * @as(f32, @floatFromInt(i)) + x_offset),
             // column y position
-            @intFromFloat(window_height - rect_height),
+            @intFromFloat(window_height - rect_height + 1),
             // constant column width
             @intFromFloat(@ceil(rect_width)),
             // variable column height

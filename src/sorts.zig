@@ -14,10 +14,12 @@ pub fn Sort_One_Iteration(state: *ent.State) void {
     if (state.is_sorted)
         return;
 
+    state.iteration_counter += 1;
     switch (state.current_sorting_algorithm) {
         .bogo => Bogo_Sort(state),
         .insertion => Insertion_Sort(state),
         .bubble => Bubble_Sort(state),
+        .selection => Selection_Sort(state),
     }
 
     if (state.is_sorted)
@@ -122,4 +124,37 @@ fn Bubble_Sort(state: *ent.State) void {
     }
 
     aux.i += 1;
+}
+
+fn Selection_Sort(state: *ent.State) void {
+    // init "local" variables
+    if (state.aux_vars == null) {
+        state.aux_vars = ent.AuxiliarySortingVariables{
+            .satisfies_predicate = false,
+            .i = 0, // will serve as the slow moving index
+            .j = 0, // will serve as the fast index
+            .k = undefined, // will hold the index with the smallest value
+        };
+    }
+    const aux: *ent.AuxiliarySortingVariables = &state.aux_vars.?;
+
+    if ((aux.i + 1) >= state.entry_vector.len) {
+        state.is_sorted = true;
+        return;
+    }
+
+    aux.j += 1;
+
+    // fast index reached end of list, swap with lowest then reset
+    if (aux.j >= state.entry_vector.len) {
+        state.Swap(aux.i, aux.k);
+        aux.i += 1;
+        aux.j = aux.i;
+        aux.k = aux.i;
+        return;
+    }
+
+    if (state.Compare(aux.k, aux.j, ent.State.Predicate) == false) {
+        aux.k = aux.j;
+    }
 }

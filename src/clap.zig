@@ -37,6 +37,8 @@ pub const Flags = struct {
                 result.starting_sort = .insertion;
             if (std.mem.eql(u8, "--sort=bubble", arg.?))
                 result.starting_sort = .bubble;
+            if (std.mem.eql(u8, "--sort=selection", arg.?))
+                result.starting_sort = .selection;
             if (std.mem.startsWith(u8, arg.?, "--count="))
                 result.entry_count = std.fmt.parseInt(usize, arg.?[8..], 10) catch 100;
             if (std.mem.startsWith(u8, arg.?, "--ips="))
@@ -75,7 +77,7 @@ pub const Flags = struct {
         \\    Specify the sorting algorithm to be used. Default is insertion sort.
         \\
         \\AVAILABLE SORTING ALGORITHMS:
-        \\bogo, insertion, bubble
+        \\bogo, insertion, bubble, selection
         \\
         ;
     }
@@ -83,7 +85,7 @@ pub const Flags = struct {
     pub fn Version_String() []const u8 {
         return 
         \\The sorting algorithm visualizer.
-        \\Version 0.2
+        \\Version 0.3
         \\
         ;
     }
