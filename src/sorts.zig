@@ -1,3 +1,12 @@
+//=============================================================//
+//                                                             //
+//                     SORTING ALGORITHMS                      //
+//                                                             //
+//   Defines the single iteration version of the sorting       //
+//  algorithms.                                                //
+//                                                             //
+//=============================================================//
+
 const std = @import("std");
 const ent = @import("entry.zig");
 

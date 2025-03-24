@@ -1,3 +1,13 @@
+//=============================================================//
+//                                                             //
+//                           ENTRY                             //
+//                                                             //
+//   Defines the behaviour of the columns and values to be     //
+//  sorted, as well as defining the global program's state     //
+//  machine.                                                   //
+//                                                             //
+//=============================================================//
+
 const std = @import("std");
 
 pub const SortingAlgorithm = enum {
@@ -11,6 +21,25 @@ pub const SortingAlgorithm = enum {
             .insertion => "Insertion",
             .bubble => "Bubble",
         };
+    }
+
+    /// bogo sort is *not* included in the cycle
+    pub fn Cycle_Next(self: SortingAlgorithm, next_or_previous: bool) SortingAlgorithm {
+        if (next_or_previous) {
+            return switch (self) {
+                .bogo => .insertion,
+
+                .insertion => .bubble,
+                .bubble => .insertion,
+            };
+        } else {
+            return switch (self) {
+                .bogo => .insertion,
+
+                .insertion => .bubble,
+                .bubble => .insertion,
+            };
+        }
     }
 };
 
@@ -26,6 +55,7 @@ pub const Entry = struct {
     condition: EntryCondition,
     color_timer: u8,
 
+    /// automatically adjusts timer
     pub fn Set_Condition(this: *Entry, cond: EntryCondition) void {
         this.color_timer = 0xFF;
         this.condition = cond;
@@ -41,6 +71,7 @@ pub const AuxiliarySortingVariables = struct {
 
 pub const State = struct {
     allocator: std.mem.Allocator = undefined,
+
     entry_vector: []Entry = undefined,
     aux_vars: ?AuxiliarySortingVariables = null,
     is_sorted: bool = false,
@@ -50,7 +81,7 @@ pub const State = struct {
     shuffle_counter: usize = 0,
     write_counter: usize = 0,
 
-    /// initialize everything, caller does not own the allocated memory
+    /// initialize everything and allocates the entries data
     pub fn Init(allocator: std.mem.Allocator, num: usize, algorithm: SortingAlgorithm) !State {
         var result: State = State{};
         result.allocator = allocator;

@@ -12,7 +12,7 @@ $ zig build --release=safe
 
 ## TODO
 - [X] Command line arguments
-- [ ] Clean up codebase
+- [X] Clean up codebase
 - [ ] Merge sort
 - [ ] Quick sort
 - [ ] Heap sort

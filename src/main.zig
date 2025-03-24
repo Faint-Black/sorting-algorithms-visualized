@@ -1,3 +1,11 @@
+//=============================================================//
+//                                                             //
+//                           MAIN                              //
+//                                                             //
+//   Requires Zig 0.14.0 and Raylib for compilation.           //
+//                                                             //
+//=============================================================//
+
 const std = @import("std");
 const builtin = @import("builtin");
 const clap = @import("clap.zig");
@@ -27,15 +35,18 @@ pub fn main() !void {
     defer state.Deinit();
     state.Shuffle();
 
+    const FPS = 60;
     var iters_per_frame: f64 = undefined;
     var frametime_count: f64 = 0.0;
 
+    // main event loop
     raylib.SetTraceLogLevel(raylib.LOG_ERROR);
-    raylib.SetTargetFPS(60);
+    raylib.SetTargetFPS(FPS);
     raylib.InitWindow(renderer.window_width, renderer.window_height, "Sorting algorithms");
     while (!raylib.WindowShouldClose()) {
-        iters_per_frame = @as(f64, @floatFromInt(flags.iterations_per_second)) / 60.0;
+        iters_per_frame = @as(f64, @floatFromInt(flags.iterations_per_second)) / FPS;
 
+        // skip frame if frametime is less than threshold
         if (frametime_count >= 1.0) {
             frametime_count -= 1.0;
             sort.Sort_One_Iteration(&state);
@@ -44,6 +55,7 @@ pub fn main() !void {
             frametime_count += iters_per_frame;
         }
 
+        // render program state and handle keyboard input
         raylib.BeginDrawing();
         raylib.ClearBackground(raylib.BLACK);
         renderer.Handle_Inputs(&state, &flags);

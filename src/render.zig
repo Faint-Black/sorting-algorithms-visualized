@@ -1,3 +1,12 @@
+//=============================================================//
+//                                                             //
+//                          RENDERER                           //
+//                                                             //
+//   Responsible for dealing with anything Raylib related,     //
+//  including the keyboard input handling.                     //
+//                                                             //
+//=============================================================//
+
 const std = @import("std");
 const builtin = @import("builtin");
 const ent = @import("entry.zig");
@@ -14,13 +23,20 @@ pub fn Handle_Inputs(state: *ent.State, flags: *clap.Flags) void {
     if (raylib.IsKeyPressed(raylib.KEY_R)) {
         state.Reset();
     }
-
     if (raylib.IsKeyDown(raylib.KEY_UP)) {
         flags.iterations_per_second += 1;
     }
     if (raylib.IsKeyDown(raylib.KEY_DOWN)) {
         if (flags.iterations_per_second > 1)
             flags.iterations_per_second -= 1;
+    }
+    if (raylib.IsKeyPressed(raylib.KEY_RIGHT)) {
+        state.aux_vars = null;
+        state.current_sorting_algorithm = state.current_sorting_algorithm.Cycle_Next(true);
+    }
+    if (raylib.IsKeyPressed(raylib.KEY_LEFT)) {
+        state.aux_vars = null;
+        state.current_sorting_algorithm = state.current_sorting_algorithm.Cycle_Next(false);
     }
 }
 
@@ -38,44 +54,50 @@ pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
 
     var string_buffer: [512]u8 = undefined;
     var slice: []const u8 = undefined;
+
+    const diagonal_offset: i32 = 5;
     const text_spacing: i32 = 22;
     var text_line_counter: i32 = 0;
 
     slice = std.fmt.bufPrint(&string_buffer, "Entries: {}\x00", .{state.entry_vector.len}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
 
     slice = std.fmt.bufPrint(&string_buffer, "Iterations/s: {}\x00", .{flags.iterations_per_second}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
 
     slice = std.fmt.bufPrint(&string_buffer, "Sort: {s}\x00", .{state.current_sorting_algorithm.Get_String()}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 2;
 
     slice = std.fmt.bufPrint(&string_buffer, "Shuffles: {}\x00", .{state.shuffle_counter}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
 
     slice = std.fmt.bufPrint(&string_buffer, "Compares: {}\x00", .{state.compare_counter}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.RED);
     text_line_counter += 1;
 
     slice = std.fmt.bufPrint(&string_buffer, "Swaps: {}\x00", .{state.swap_counter}) catch
         @panic("buffer fmt failed");
-    raylib.DrawText(slice.ptr, 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
-    text_line_counter += 4;
+    raylib.DrawText(slice.ptr, 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.BLUE);
+    text_line_counter += 7;
 
-    raylib.DrawText("(R) reset", 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(R) reset", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
-    raylib.DrawText("(UP) + ips", 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(<-) previous algo.", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
-    raylib.DrawText("(DOWN) - ips", 5, 5 + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    raylib.DrawText("(->) next algo.", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+    raylib.DrawText("(UP) ips+", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
+    text_line_counter += 1;
+    raylib.DrawText("(DOWN) ips-", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.WHITE);
     text_line_counter += 1;
 
     const rect_width: f32 = @as(f32, @floatFromInt(window_width - x_offset)) / @as(f32, @floatFromInt(state.entry_vector.len));

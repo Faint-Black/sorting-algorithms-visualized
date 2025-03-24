@@ -1,3 +1,12 @@
+//=============================================================//
+//                                                             //
+//            COMMAND LINE ARGUMENTS PARSER                    //
+//                                                             //
+//   Responsible for setting the flags passed through the      //
+//  command line terminal.                                     //
+//                                                             //
+//=============================================================//
+
 const std = @import("std");
 const ent = @import("entry.zig");
 
@@ -11,6 +20,7 @@ pub const Flags = struct {
     pub fn Parse(allocator: std.mem.Allocator) !Flags {
         var result = Flags{};
 
+        // parsing loop
         var argv = try std.process.ArgIterator.initWithAllocator(allocator);
         defer argv.deinit();
         var arg: ?[:0]const u8 = argv.next();
@@ -33,6 +43,7 @@ pub const Flags = struct {
                 result.iterations_per_second = std.fmt.parseInt(usize, arg.?[6..], 10) catch 60;
         }
 
+        // invalid flag value checks
         if (result.iterations_per_second == 0)
             return error.BadIPS;
         if (result.entry_count <= 5)
@@ -72,7 +83,7 @@ pub const Flags = struct {
     pub fn Version_String() []const u8 {
         return 
         \\The sorting algorithm visualizer.
-        \\Version 0.1
+        \\Version 0.2
         \\
         ;
     }
