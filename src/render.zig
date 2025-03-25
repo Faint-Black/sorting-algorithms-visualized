@@ -31,12 +31,10 @@ pub fn Handle_Inputs(state: *ent.State, flags: *clap.Flags) void {
             flags.iterations_per_second -= 1;
     }
     if (raylib.IsKeyPressed(raylib.KEY_RIGHT)) {
-        state.aux_vars = null;
-        state.current_sorting_algorithm = state.current_sorting_algorithm.Cycle_Next(true);
+        state.Change_Sort(state.current_sorting_algorithm.Cycle_Next(true));
     }
     if (raylib.IsKeyPressed(raylib.KEY_LEFT)) {
-        state.aux_vars = null;
-        state.current_sorting_algorithm = state.current_sorting_algorithm.Cycle_Next(false);
+        state.Change_Sort(state.current_sorting_algorithm.Cycle_Next(false));
     }
 }
 

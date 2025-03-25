@@ -29,78 +29,92 @@ pub fn Sort_One_Iteration(state: *ent.State) void {
 fn Bogo_Sort(state: *ent.State) void {
     // init "local" variables
     if (state.aux_vars == null) {
-        state.aux_vars = ent.AuxiliarySortingVariables{
-            .i = 1,
+        state.aux_vars = .{
+            .satisfies_predicate = false,
+            .allocated_index_array = state.allocator.alloc(usize, 1) catch @panic("Memory allocation error!"),
+            .allocated_value_array = null,
         };
+        // i = 1
+        state.aux_vars.?.allocated_index_array.?[0] = 1;
     }
-    const aux: *ent.AuxiliarySortingVariables = &state.aux_vars.?;
+    const i = &state.aux_vars.?.allocated_index_array.?[0];
 
     // reached solved state
-    if (aux.i >= state.entry_vector.len) {
+    if (i.* >= state.entry_vector.len) {
         state.is_sorted = true;
         return;
     }
 
-    const i = aux.i;
     // if NOT sorted, shuffle and reset counter
-    if (state.Compare(i - 1, i, ent.State.Predicate) == false) {
+    if (state.Compare(i.* - 1, i.*, ent.State.Predicate) == false) {
         state.Set_All_Conditions_To(.neutral);
         state.Shuffle();
-        aux.i = 0;
+        i.* = 0;
     }
 
-    aux.i += 1;
+    i.* += 1;
 }
 
 fn Insertion_Sort(state: *ent.State) void {
     // init "local" variables
     if (state.aux_vars == null) {
-        state.aux_vars = ent.AuxiliarySortingVariables{
+        state.aux_vars = .{
             .satisfies_predicate = false,
-            .i = 1,
-            .j = 1,
+            .allocated_index_array = state.allocator.alloc(usize, 2) catch @panic("Memory allocation error!"),
+            .allocated_value_array = null,
         };
+        // i = 1
+        state.aux_vars.?.allocated_index_array.?[0] = 1;
+        // j = 1
+        state.aux_vars.?.allocated_index_array.?[1] = 1;
     }
-    const aux: *ent.AuxiliarySortingVariables = &state.aux_vars.?;
+    const pred = &state.aux_vars.?.satisfies_predicate;
+    const i = &state.aux_vars.?.allocated_index_array.?[0];
+    const j = &state.aux_vars.?.allocated_index_array.?[1];
 
-    if (aux.i >= state.entry_vector.len) {
+    if (i.* >= state.entry_vector.len) {
         state.is_sorted = true;
         return;
     }
 
     // comparisons and swaps do not occur on the same iteration
-    if (aux.satisfies_predicate) {
-        state.Swap(aux.j, aux.j - 1);
-        aux.j -= 1;
-        aux.satisfies_predicate = false;
+    if (pred.*) {
+        state.Swap(j.*, j.* - 1);
+        j.* -= 1;
+        pred.* = false;
         return;
     }
 
     // skip redundant iteration
-    if (aux.j == 0) {
-        aux.i += 1;
-        aux.j = aux.i;
+    if (j.* == 0) {
+        i.* += 1;
+        j.* = i.*;
     }
 
-    if (state.Compare(aux.j, aux.j - 1, ent.State.Predicate)) {
-        aux.satisfies_predicate = true;
+    if (state.Compare(j.*, j.* - 1, ent.State.Predicate)) {
+        pred.* = true;
     } else {
-        aux.i += 1;
-        aux.j = aux.i;
+        i.* += 1;
+        j.* = i.*;
     }
 }
 
 fn Bubble_Sort(state: *ent.State) void {
     // init "local" variables
     if (state.aux_vars == null) {
-        state.aux_vars = ent.AuxiliarySortingVariables{
+        state.aux_vars = .{
             .satisfies_predicate = false,
-            .i = 1, // will serve as (rhs) index of a comparison pair
-            .j = state.entry_vector.len, // will serve as the iteration count
+            .allocated_index_array = state.allocator.alloc(usize, 2) catch @panic("Memory allocation error!"),
+            .allocated_value_array = null,
         };
+        // i = 1
+        state.aux_vars.?.allocated_index_array.?[0] = 1;
+        // max = len
+        state.aux_vars.?.allocated_index_array.?[1] = state.entry_vector.len;
     }
-    const aux: *ent.AuxiliarySortingVariables = &state.aux_vars.?;
-    const max: *usize = &state.aux_vars.?.j;
+    const pred = &state.aux_vars.?.satisfies_predicate;
+    const i = &state.aux_vars.?.allocated_index_array.?[0];
+    const max = &state.aux_vars.?.allocated_index_array.?[1];
 
     if (max.* <= 2) {
         state.is_sorted = true;
@@ -108,53 +122,60 @@ fn Bubble_Sort(state: *ent.State) void {
     }
 
     // comparisons and swaps do not occur on the same iteration
-    if (aux.satisfies_predicate) {
-        state.Swap(aux.i - 2, aux.i - 1);
-        aux.satisfies_predicate = false;
+    if (pred.*) {
+        state.Swap(i.* - 2, i.* - 1);
+        pred.* = false;
         return;
     }
 
-    if (aux.i >= max.*) {
-        aux.i = 1;
+    if (i.* >= max.*) {
+        i.* = 1;
         max.* -= 1;
     }
 
-    if (state.Compare(aux.i - 1, aux.i, ent.State.Predicate) == false) {
-        aux.satisfies_predicate = true;
+    if (state.Compare(i.* - 1, i.*, ent.State.Predicate) == false) {
+        pred.* = true;
     }
 
-    aux.i += 1;
+    i.* += 1;
 }
 
 fn Selection_Sort(state: *ent.State) void {
     // init "local" variables
     if (state.aux_vars == null) {
-        state.aux_vars = ent.AuxiliarySortingVariables{
+        state.aux_vars = .{
             .satisfies_predicate = false,
-            .i = 0, // will serve as the slow moving index
-            .j = 0, // will serve as the fast index
-            .k = undefined, // will hold the index with the smallest value
+            .allocated_index_array = state.allocator.alloc(usize, 3) catch @panic("Memory allocation error!"),
+            .allocated_value_array = null,
         };
+        // slow = 0
+        state.aux_vars.?.allocated_index_array.?[0] = 0;
+        // fast = 0
+        state.aux_vars.?.allocated_index_array.?[1] = 0;
+        // smallest = undefined
+        state.aux_vars.?.allocated_index_array.?[2] = 0;
     }
-    const aux: *ent.AuxiliarySortingVariables = &state.aux_vars.?;
+    const slow = &state.aux_vars.?.allocated_index_array.?[0];
+    const fast = &state.aux_vars.?.allocated_index_array.?[1];
+    const smallest = &state.aux_vars.?.allocated_index_array.?[2];
 
-    if ((aux.i + 1) >= state.entry_vector.len) {
+    if ((slow.* + 1) >= state.entry_vector.len) {
         state.is_sorted = true;
         return;
     }
 
-    aux.j += 1;
+    fast.* += 1;
 
     // fast index reached end of list, swap with lowest then reset
-    if (aux.j >= state.entry_vector.len) {
-        state.Swap(aux.i, aux.k);
-        aux.i += 1;
-        aux.j = aux.i;
-        aux.k = aux.i;
+    if (fast.* >= state.entry_vector.len) {
+        state.Swap(slow.*, smallest.*);
+        slow.* += 1;
+        fast.* = slow.*;
+        smallest.* = slow.*;
         return;
     }
 
-    if (state.Compare(aux.k, aux.j, ent.State.Predicate) == false) {
-        aux.k = aux.j;
+    if (state.Compare(smallest.*, fast.*, ent.State.Predicate) == false) {
+        smallest.* = fast.*;
     }
 }

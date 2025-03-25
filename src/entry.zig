@@ -68,10 +68,15 @@ pub const Entry = struct {
 
 pub const AuxiliarySortingVariables = struct {
     satisfies_predicate: bool = undefined,
-    key: u32 = undefined,
-    i: usize = undefined,
-    j: usize = undefined,
-    k: usize = undefined,
+    allocated_index_array: ?[]usize = null,
+    allocated_value_array: ?[]u32 = null,
+
+    pub fn Deinit(self: AuxiliarySortingVariables, allocator: std.mem.Allocator) void {
+        if (self.allocated_index_array) |memory|
+            allocator.free(memory);
+        if (self.allocated_value_array) |memory|
+            allocator.free(memory);
+    }
 };
 
 pub const State = struct {
@@ -103,11 +108,15 @@ pub const State = struct {
 
     /// free allocated data
     pub fn Deinit(this: *State) void {
+        if (this.aux_vars) |aux|
+            aux.Deinit(this.allocator);
         this.allocator.free(this.entry_vector);
     }
 
     /// reset variables to starting values then shuffle vector
     pub fn Reset(this: *State) void {
+        if (this.aux_vars) |aux|
+            aux.Deinit(this.allocator);
         this.aux_vars = null;
         this.is_sorted = false;
         this.iteration_counter = 0;
@@ -120,10 +129,21 @@ pub const State = struct {
 
     /// shuffle vector contents
     pub fn Shuffle(this: *State) void {
+        if (this.aux_vars) |aux|
+            aux.Deinit(this.allocator);
+        this.aux_vars = null;
         this.shuffle_counter += 1;
         this.is_sorted = false;
         var generator = std.Random.DefaultPrng.init(@intCast(std.time.microTimestamp()));
         std.Random.shuffle(generator.random(), Entry, this.entry_vector);
+    }
+
+    /// safely change sorting algorithm
+    pub fn Change_Sort(this: *State, new_sort: SortingAlgorithm) void {
+        if (this.aux_vars) |aux|
+            aux.Deinit(this.allocator);
+        this.aux_vars = null;
+        this.current_sorting_algorithm = new_sort;
     }
 
     /// ascending order sorting predicate for higher order functions
