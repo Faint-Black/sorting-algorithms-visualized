@@ -12,9 +12,7 @@ const clap = @import("clap.zig");
 const ent = @import("entry.zig");
 const renderer = @import("render.zig");
 const sort = @import("sorts.zig");
-const raylib = @cImport({
-    @cInclude("raylib.h");
-});
+const raylib = @import("raylib");
 
 pub fn main() !void {
     var backing_allocator = std.heap.DebugAllocator(.{}).init;
@@ -40,10 +38,10 @@ pub fn main() !void {
     var frametime_count: f64 = 0.0;
 
     // main event loop
-    raylib.SetTraceLogLevel(raylib.LOG_ERROR);
-    raylib.SetTargetFPS(FPS);
-    raylib.InitWindow(renderer.window_width, renderer.window_height, "Sorting algorithms");
-    while (!raylib.WindowShouldClose()) {
+    raylib.setTraceLogLevel(.err);
+    raylib.setTargetFPS(FPS);
+    raylib.initWindow(renderer.window_width, renderer.window_height, "Sorting algorithms");
+    while (!raylib.windowShouldClose()) {
         iters_per_frame = @as(f64, @floatFromInt(flags.iterations_per_second)) / FPS;
 
         // skip frame if frametime is less than threshold
@@ -56,10 +54,10 @@ pub fn main() !void {
         }
 
         // render program state and handle keyboard input
-        raylib.BeginDrawing();
-        raylib.ClearBackground(raylib.BLACK);
+        raylib.beginDrawing();
+        raylib.clearBackground(raylib.Color.black);
         renderer.Handle_Inputs(&state, &flags);
         renderer.Render_Frame(&state, &flags);
-        raylib.EndDrawing();
+        raylib.endDrawing();
     }
 }

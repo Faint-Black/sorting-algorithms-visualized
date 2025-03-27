@@ -13,6 +13,16 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // raylib module dependencies
+    const raylib_dep = b.dependency("raylib_zig", .{
+        .target = target,
+        .optimize = optimize,
+        .shared = true,
+    });
+    const raylib_mod = raylib_dep.module("raylib");
+    const raygui_mod = raylib_dep.module("raygui");
+    const raylib_core = raylib_dep.artifact("raylib");
+
     const exe = b.addExecutable(.{
         .name = name,
         .root_module = b.createModule(.{
@@ -21,8 +31,9 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    exe.linkSystemLibrary("raylib");
-    exe.linkLibC();
+    exe.linkLibrary(raylib_core);
+    exe.root_module.addImport("raylib", raylib_mod);
+    exe.root_module.addImport("raygui", raygui_mod);
     b.installArtifact(exe);
 
     // format source files
@@ -32,6 +43,9 @@ pub fn build(b: *std.Build) void {
 
     // unit testing
     const added_tests = b.addTest(.{ .root_source_file = b.path(tests_filepath) });
+    added_tests.linkLibrary(raylib_core);
+    added_tests.root_module.addImport("raylib", raylib_mod);
+    added_tests.root_module.addImport("raygui", raygui_mod);
     const performStep_test = b.addRunArtifact(added_tests);
     b.default_step.dependOn(&performStep_test.step);
 
