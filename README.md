@@ -6,10 +6,3 @@ Visualizing the process of different sorting algorithms with Raylib.
 ```sh
 $ zig build --release=safe
 ```
-
-## TODO
-- [X] Command line arguments
-- [X] Clean up codebase
-- [ ] Merge sort
-- [ ] Quick sort
-- [ ] Heap sort
