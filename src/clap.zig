@@ -14,6 +14,7 @@ pub const Flags = struct {
     iterations_per_second: usize = 60,
     entry_count: usize = 100,
     starting_sort: ent.SortingAlgorithm = .insertion,
+    shuffle_type: ent.ShuffleType = .random,
     help: bool = false,
     version: bool = false,
 
@@ -39,6 +40,12 @@ pub const Flags = struct {
                 result.starting_sort = .bubble;
             if (std.mem.eql(u8, "--sort=selection", arg.?))
                 result.starting_sort = .selection;
+            if (std.mem.eql(u8, "--shuffle=random", arg.?))
+                result.shuffle_type = .random;
+            if (std.mem.eql(u8, "--shuffle=worst", arg.?))
+                result.shuffle_type = .worst_case;
+            if (std.mem.eql(u8, "--shuffle=mostly-sorted", arg.?))
+                result.shuffle_type = .mostly_sorted;
             if (std.mem.startsWith(u8, arg.?, "--count="))
                 result.entry_count = std.fmt.parseInt(usize, arg.?[8..], 10) catch 100;
             if (std.mem.startsWith(u8, arg.?, "--ips="))
@@ -75,6 +82,12 @@ pub const Flags = struct {
         \\    Specify rate of algorithm iterations per second. Default is 60.
         \\--sort=[sorting-algorithm]
         \\    Specify the sorting algorithm to be used. Default is insertion sort.
+        \\--shuffle=random
+        \\    All entries are shuffled in a completely random order. This is the default shuffle.
+        \\--shuffle=worst
+        \\    Sets the shuffle to set the order to a worst case scenario.
+        \\--shuffle=mostly-sorted
+        \\    Entries are shuffled between a small range of its closest neighbors.
         \\
         \\AVAILABLE SORTING ALGORITHMS:
         \\bogo, insertion, bubble, selection

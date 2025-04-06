@@ -60,6 +60,11 @@ pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
     raylib.drawText(slice[0 .. slice.len - 1 :0], 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.Color.white);
     text_line_counter += 1;
 
+    slice = std.fmt.bufPrint(&string_buffer, "[{s}]\x00", .{state.current_shuffle_type.Get_String()}) catch
+        @panic("buffer fmt failed");
+    raylib.drawText(slice[0 .. slice.len - 1 :0], 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.Color.white);
+    text_line_counter += 1;
+
     slice = std.fmt.bufPrint(&string_buffer, "Entries: {}\x00", .{state.entry_vector.len}) catch
         @panic("buffer fmt failed");
     raylib.drawText(slice[0 .. slice.len - 1 :0], 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.Color.white);
@@ -88,7 +93,7 @@ pub fn Render_Frame(state: *ent.State, flags: *clap.Flags) void {
     slice = std.fmt.bufPrint(&string_buffer, "Swaps: {}\x00", .{state.swap_counter}) catch
         @panic("buffer fmt failed");
     raylib.drawText(slice[0 .. slice.len - 1 :0], 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.Color.blue);
-    text_line_counter += 9;
+    text_line_counter += 8;
 
     raylib.drawText("(R) reset", 5, diagonal_offset + (text_spacing * text_line_counter), 20, raylib.Color.white);
     text_line_counter += 1;

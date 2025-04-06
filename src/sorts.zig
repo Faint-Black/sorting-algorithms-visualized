@@ -89,6 +89,10 @@ fn Insertion_Sort(state: *ent.State) void {
     if (j.* == 0) {
         i.* += 1;
         j.* = i.*;
+        if (i.* >= state.entry_vector.len) {
+            state.is_sorted = true;
+            return;
+        }
     }
 
     if (state.Compare(j.*, j.* - 1, ent.State.Predicate)) {
@@ -116,7 +120,7 @@ fn Bubble_Sort(state: *ent.State) void {
     const i = &state.aux_vars.?.allocated_index_array.?[0];
     const max = &state.aux_vars.?.allocated_index_array.?[1];
 
-    if (max.* <= 2) {
+    if (max.* <= 1) {
         state.is_sorted = true;
         return;
     }

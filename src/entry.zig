@@ -47,6 +47,20 @@ pub const SortingAlgorithm = enum {
     }
 };
 
+pub const ShuffleType = enum {
+    random,
+    worst_case,
+    mostly_sorted,
+
+    pub fn Get_String(self: ShuffleType) []const u8 {
+        return switch (self) {
+            .random => "Random Shuffle",
+            .worst_case => "Worst Case",
+            .mostly_sorted => "Mostly Sorted",
+        };
+    }
+};
+
 pub const EntryCondition = enum {
     neutral,
     marked,
@@ -86,6 +100,7 @@ pub const State = struct {
     aux_vars: ?AuxiliarySortingVariables = null,
     is_sorted: bool = false,
     current_sorting_algorithm: SortingAlgorithm = undefined,
+    current_shuffle_type: ShuffleType = undefined,
     iteration_counter: usize = 0,
     compare_counter: usize = 0,
     swap_counter: usize = 0,
@@ -93,7 +108,7 @@ pub const State = struct {
     write_counter: usize = 0,
 
     /// initialize everything and allocates the entries data
-    pub fn Init(allocator: std.mem.Allocator, num: usize, algorithm: SortingAlgorithm) !State {
+    pub fn Init(allocator: std.mem.Allocator, num: usize, algorithm: SortingAlgorithm, shuffle: ShuffleType) !State {
         var result: State = State{};
         result.allocator = allocator;
         result.entry_vector = try result.allocator.alloc(Entry, num);
@@ -103,6 +118,7 @@ pub const State = struct {
             entry.color_timer = 0xFF;
         }
         result.current_sorting_algorithm = algorithm;
+        result.current_shuffle_type = shuffle;
         return result;
     }
 
@@ -127,15 +143,32 @@ pub const State = struct {
         this.Shuffle();
     }
 
-    /// shuffle vector contents
+    /// shuffle vector and reset aux variables
     pub fn Shuffle(this: *State) void {
         if (this.aux_vars) |aux|
             aux.Deinit(this.allocator);
         this.aux_vars = null;
         this.shuffle_counter += 1;
         this.is_sorted = false;
-        var generator = std.Random.DefaultPrng.init(@intCast(std.time.microTimestamp()));
-        std.Random.shuffle(generator.random(), Entry, this.entry_vector);
+
+        switch (this.current_shuffle_type) {
+            .random => {
+                var generator = std.Random.DefaultPrng.init(@intCast(std.time.microTimestamp()));
+                std.Random.shuffle(generator.random(), Entry, this.entry_vector);
+            },
+            .worst_case => {
+                for (0..this.entry_vector.len) |i| {
+                    this.entry_vector[i].value = @truncate(this.entry_vector.len - i);
+                }
+            },
+            .mostly_sorted => {
+                const random_range = 5;
+                var generator = std.Random.DefaultPrng.init(@intCast(std.time.microTimestamp()));
+                for (0..this.entry_vector.len - random_range) |i| {
+                    std.Random.shuffle(generator.random(), Entry, this.entry_vector[i .. i + random_range]);
+                }
+            },
+        }
     }
 
     /// safely change sorting algorithm
