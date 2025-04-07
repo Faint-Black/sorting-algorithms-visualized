@@ -50,7 +50,7 @@ fn Bogo_Sort(state: *ent.State) void {
     if (state.Compare(i.* - 1, i.*, ent.State.Predicate) == false) {
         state.Set_All_Conditions_To(.neutral);
         state.Shuffle();
-        i.* = 0;
+        return;
     }
 
     i.* += 1;
