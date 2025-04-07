@@ -9,6 +9,7 @@
 //=============================================================//
 
 const std = @import("std");
+const clap = @import("clap.zig");
 
 pub const SortingAlgorithm = enum {
     bogo,
@@ -101,6 +102,7 @@ pub const State = struct {
     is_sorted: bool = false,
     current_sorting_algorithm: SortingAlgorithm = undefined,
     current_shuffle_type: ShuffleType = undefined,
+    mostly_sorted_range: usize = undefined,
     iteration_counter: usize = 0,
     compare_counter: usize = 0,
     swap_counter: usize = 0,
@@ -108,17 +110,18 @@ pub const State = struct {
     write_counter: usize = 0,
 
     /// initialize everything and allocates the entries data
-    pub fn Init(allocator: std.mem.Allocator, num: usize, algorithm: SortingAlgorithm, shuffle: ShuffleType) !State {
+    pub fn Init(allocator: std.mem.Allocator, flags: clap.Flags) !State {
         var result: State = State{};
         result.allocator = allocator;
-        result.entry_vector = try result.allocator.alloc(Entry, num);
+        result.entry_vector = try result.allocator.alloc(Entry, flags.entry_count);
         for (result.entry_vector, 1..) |*entry, i| {
             entry.value = @truncate(i);
             entry.condition = .neutral;
             entry.color_timer = 0xFF;
         }
-        result.current_sorting_algorithm = algorithm;
-        result.current_shuffle_type = shuffle;
+        result.current_sorting_algorithm = flags.starting_sort;
+        result.current_shuffle_type = flags.shuffle_type;
+        result.mostly_sorted_range = flags.mostly_sorted_range;
         return result;
     }
 
@@ -162,10 +165,13 @@ pub const State = struct {
                 }
             },
             .mostly_sorted => {
-                const random_range = 5;
                 var generator = std.Random.DefaultPrng.init(@intCast(std.time.microTimestamp()));
-                for (0..this.entry_vector.len - random_range) |i| {
-                    std.Random.shuffle(generator.random(), Entry, this.entry_vector[i .. i + random_range]);
+                if ((this.mostly_sorted_range + 1) >= this.entry_vector.len) {
+                    // just do a random sort if range is higher than vector length
+                    std.Random.shuffle(generator.random(), Entry, this.entry_vector);
+                } else {
+                    for (0..this.entry_vector.len - this.mostly_sorted_range) |i|
+                        std.Random.shuffle(generator.random(), Entry, this.entry_vector[i .. i + this.mostly_sorted_range]);
                 }
             },
         }

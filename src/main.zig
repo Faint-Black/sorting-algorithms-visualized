@@ -29,7 +29,7 @@ pub fn main() !void {
         return;
     }
 
-    var state = try ent.State.Init(global_allocator, flags.entry_count, flags.starting_sort, flags.shuffle_type);
+    var state = try ent.State.Init(global_allocator, flags);
     defer state.Deinit();
     state.Shuffle();
 

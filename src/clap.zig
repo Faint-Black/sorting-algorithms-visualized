@@ -13,6 +13,7 @@ const ent = @import("entry.zig");
 pub const Flags = struct {
     iterations_per_second: usize = 60,
     entry_count: usize = 100,
+    mostly_sorted_range: usize = 6,
     starting_sort: ent.SortingAlgorithm = .insertion,
     shuffle_type: ent.ShuffleType = .random,
     help: bool = false,
@@ -46,6 +47,10 @@ pub const Flags = struct {
                 result.shuffle_type = .worst_case;
             if (std.mem.eql(u8, "--shuffle=mostly-sorted", arg.?))
                 result.shuffle_type = .mostly_sorted;
+            if (std.mem.startsWith(u8, arg.?, "--shuffle=mostly-sorted=")) {
+                result.shuffle_type = .mostly_sorted;
+                result.mostly_sorted_range = std.fmt.parseInt(usize, arg.?[24..], 10) catch 6;
+            }
             if (std.mem.startsWith(u8, arg.?, "--count="))
                 result.entry_count = std.fmt.parseInt(usize, arg.?[8..], 10) catch 100;
             if (std.mem.startsWith(u8, arg.?, "--ips="))
@@ -76,18 +81,20 @@ pub const Flags = struct {
         \\    Output the version information of this program.
         \\
         \\CORE USAGE FLAGS:
-        \\--count=[int]
+        \\--count=[unsigned int]
         \\    Specify number of columns to be sorted. Default is 100.
-        \\--ips=[int]
+        \\--ips=[unsigned int]
         \\    Specify rate of algorithm iterations per second. Default is 60.
         \\--sort=[sorting-algorithm]
         \\    Specify the sorting algorithm to be used. Default is insertion sort.
         \\--shuffle=random
         \\    All entries are shuffled in a completely random order. This is the default shuffle.
         \\--shuffle=worst
-        \\    Sets the shuffle to set the order to a worst case scenario.
+        \\    Sets the vector to always turn into a worst case scenario.
         \\--shuffle=mostly-sorted
-        \\    Entries are shuffled between a small range of its closest neighbors.
+        \\    Entries are shuffled within a small range of its closest neighbors. Default range is 6.
+        \\--shuffle=mostly-sorted=[unsigned int]
+        \\    Define a custom range for the mostly-sorted neighbor shuffle.
         \\
         \\AVAILABLE SORTING ALGORITHMS:
         \\bogo, insertion, bubble, selection

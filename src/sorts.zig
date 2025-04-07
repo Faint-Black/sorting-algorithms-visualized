@@ -28,6 +28,7 @@ pub fn Sort_One_Iteration(state: *ent.State) void {
 
 fn Bogo_Sort(state: *ent.State) void {
     // init "local" variables
+    // Space complexity = O(1)
     if (state.aux_vars == null) {
         state.aux_vars = .{
             .satisfies_predicate = false,
@@ -57,6 +58,7 @@ fn Bogo_Sort(state: *ent.State) void {
 
 fn Insertion_Sort(state: *ent.State) void {
     // init "local" variables
+    // Space complexity = O(2)
     if (state.aux_vars == null) {
         state.aux_vars = .{
             .satisfies_predicate = false,
@@ -105,6 +107,7 @@ fn Insertion_Sort(state: *ent.State) void {
 
 fn Bubble_Sort(state: *ent.State) void {
     // init "local" variables
+    // Space complexity = O(2)
     if (state.aux_vars == null) {
         state.aux_vars = .{
             .satisfies_predicate = false,
@@ -146,6 +149,7 @@ fn Bubble_Sort(state: *ent.State) void {
 
 fn Selection_Sort(state: *ent.State) void {
     // init "local" variables
+    // Space complexity = O(3)
     if (state.aux_vars == null) {
         state.aux_vars = .{
             .satisfies_predicate = false,
